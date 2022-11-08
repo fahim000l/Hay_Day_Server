@@ -59,6 +59,14 @@ async function run() {
         const result = await reviewsCollection.findOne(query);
         res.send(result);
     });
+
+    app.get('/servicereviews/:serviceid', async (req, res) => {
+        const serviceid = req.params.serviceid;
+        const query = { serviceId: serviceid };
+        const cursor = reviewsCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+    })
 }
 
 run().catch(err => console.error(err));
