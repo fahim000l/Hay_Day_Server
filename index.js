@@ -24,6 +24,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
 
     const servicesCollection = client.db('hayday-db').collection('services');
+    const reviewsCollection = client.db('hayday-db').collection('reviews');
 
     app.get('/services', async (req, res) => {
         let query = {};
@@ -43,6 +44,20 @@ async function run() {
         const query = { _id: ObjectId(id) };
         const service = await servicesCollection.findOne(query);
         res.send(service);
+    });
+
+    app.get('/reviews', async (req, res) => {
+        const query = {};
+        const cursor = reviewsCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+    });
+
+    app.get('/reviews/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await reviewsCollection.findOne(query);
+        res.send(result);
     });
 }
 
