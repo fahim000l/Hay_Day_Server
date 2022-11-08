@@ -26,10 +26,16 @@ async function run() {
     const servicesCollection = client.db('hayday-db').collection('services');
 
     app.get('/services', async (req, res) => {
-        const query = {};
+        let query = {};
         const cursor = servicesCollection.find(query);
-        const result = await cursor.toArray();
-        res.send(result);
+        if (req.query.quantity == 3) {
+            const result = await cursor.limit(3).toArray();
+            res.send(result);
+        }
+        else {
+            const result = await cursor.toArray();
+            res.send(result);
+        }
     });
 
     app.get('/services/:id', async (req, res) => {
