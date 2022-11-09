@@ -15,7 +15,21 @@ app.get('/', (req, res) => {
     res.send('Hello from Hay Day Server');
 });
 
+function varifyJwt(req, res, next) {
 
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send('Unauthorized Access');
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(401).send('Unauthorized Access');
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.tzinyke.mongodb.net/?retryWrites=true&w=majority`;
@@ -46,7 +60,7 @@ async function run() {
         res.send(service);
     });
 
-    app.get('/reviews', async (req, res) => {
+    app.get('/reviews', varifyJwt, async (req, res) => {
         let query = {};
         if (req.query.email) {
             query = { email: req.query.email };
@@ -79,7 +93,7 @@ async function run() {
         res.send(result);
     });
 
-    app.delete('/reviews/:id', async (req, res) => {
+    app.delete('/reviews/:id', varifyJwt, async (req, res) => {
         const id = req.params.id;
         const query = { _id: ObjectId(id) };
         const result = await reviewsCollection.deleteOne(query);
@@ -87,14 +101,14 @@ async function run() {
         res.send(result);
     });
 
-    app.delete('/reviews', async (req, res) => {
+    app.delete('/reviews', varifyJwt, async (req, res) => {
         const query = { email: req.query.email };
         const result = await reviewsCollection.deleteMany(query);
         console.log(result);
         res.send(result);
     });
 
-    app.put('/reviews/:id', async (req, res) => {
+    app.put('/reviews/:id', varifyJwt, async (req, res) => {
         const id = req.params.id;
         const query = { _id: ObjectId(id) };
         const updatingReview = req.body;
@@ -107,6 +121,13 @@ async function run() {
 
         const result = await reviewsCollection.updateOne(query, updatedReview, option);
         res.send(result);
+    });
+
+    app.post('/jwt', (req, res) => {
+        const user = req.body;
+        console.log(user);
+        const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+        res.send({ token });
     })
 
 }
