@@ -76,7 +76,7 @@ async function run() {
         const result = await reviewsCollection.insertOne(service);
         console.log(result);
         res.send(result);
-    })
+    });
 
 }
 
