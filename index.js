@@ -66,6 +66,13 @@ async function run() {
         const cursor = reviewsCollection.find(query);
         const result = await cursor.toArray();
         res.send(result);
+    });
+
+    app.post('/servicereviews/:serviceid', async (req, res) => {
+        const service = req.body;
+        const result = await reviewsCollection.insertOne(service);
+        console.log(result);
+        res.send(result);
     })
 }
 
