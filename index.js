@@ -115,7 +115,7 @@ async function run() {
         const option = { upsert: true };
         const updatedReview = {
             $set: {
-                text: updatingReview.text
+                text: updatingReview.text,
             }
         };
 
