@@ -42,7 +42,7 @@ async function run() {
 
     app.get('/services', async (req, res) => {
         let query = {};
-        const cursor = servicesCollection.find(query);
+        const cursor = servicesCollection.find(query).sort({ insertDate: -1 });
         if (req.query.quantity == 3) {
             const result = await cursor.limit(3).toArray();
             res.send(result);
@@ -53,12 +53,13 @@ async function run() {
         }
     });
 
-    app.post('/services', async (req, res) => {
+    app.post('/services', varifyJwt, async (req, res) => {
         const service = req.body;
+        service.insertDate = new Date();
         const result = await servicesCollection.insertOne(service);
         console.log(result);
         res.send(result);
-    })
+    });
 
     app.get('/services/:id', async (req, res) => {
         const id = req.params.id;
@@ -68,6 +69,13 @@ async function run() {
     });
 
     app.get('/reviews', varifyJwt, async (req, res) => {
+
+        const decoded = req.decoded;
+
+        if (decoded.email !== req.query.email) {
+            return res.status(403).send({ message: 'Unauthorized Access' })
+        }
+
         let query = {};
         if (req.query.email) {
             query = { email: req.query.email };
@@ -88,7 +96,7 @@ async function run() {
     app.get('/servicereviews/:serviceid', async (req, res) => {
         const serviceid = req.params.serviceid;
         const query = { serviceId: serviceid };
-        const cursor = reviewsCollection.find(query);
+        const cursor = reviewsCollection.find(query).sort({ date: -1 });
         const result = await cursor.toArray();
         res.send(result);
     });
